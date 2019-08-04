@@ -1,0 +1,9 @@
+Context: minikube
+Namespace: development
+
+Deployments:
+Replica Sets:
+Pods:
+Services:
+Config Maps:
+Secrets:
