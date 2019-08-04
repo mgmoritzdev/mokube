@@ -282,6 +282,7 @@
     (define-key map (kbd "t") 'mokube-top)
     (define-key map (kbd "e") 'mokube-edit-object)
     (define-key map (kbd "k") 'mokube-delete-object)
+    (define-key map (kbd "?") 'describe-mode)
     (define-key map (kbd "l") 'mokube-log-pod)
     map)
   "The keymap used in `mokube-mode'.")
