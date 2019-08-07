@@ -262,6 +262,25 @@
                        instance "-n" namespace)
         (switch-to-buffer name))))
 
+(defun mokube-bash-pod ()
+  (interactive)
+  (if (and (mokube--at-instace-name-p)
+           (string-equal (mokube--get-object-at-point) "pods"))
+      (let* ((object (mokube--get-object-at-point))
+             (instance (mokube--parse-instance-name))
+             (namespace (mokube--get-namespace))
+             (name (format "bash-%s-%s-%s"
+                           namespace
+                           object
+                           instance)))
+        (progn
+          (ansi-term "/bin/zsh" name)
+          (set-buffer (format "*%s*" name))
+          (term-send-raw-string (format "kubectl exec -it %s -n %s -- /bin/bash \n"
+                                        instance namespace)))
+        (switch-to-buffer (format "*%s*" name)))
+    (message "no pod at point")))
+
 (defun mokube-top ()
   (interactive)
   (if (and (mokube--at-instace-name-p)
@@ -295,6 +314,7 @@
     (define-key map (kbd "t") 'mokube-top)
     (define-key map (kbd "e") 'mokube-edit-object)
     (define-key map (kbd "k") 'mokube-delete-object)
+    (define-key map (kbd "b") 'mokube-bash-pod)
     (define-key map (kbd "?") 'describe-mode)
     (define-key map (kbd "l") 'mokube-log-pod)
     map)
