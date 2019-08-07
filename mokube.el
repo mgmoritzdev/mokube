@@ -143,6 +143,18 @@
                 (mokube-refresh-object))
             (mokube--clear-object-list-maybe))))))
 
+(defun mokube-watch-object ()
+  (interactive)
+  (if (mokube--at-object-name-p)
+      (let* ((object (mokube--get-object-at-point))
+             (instance (mokube--parse-instance-name))
+             (namespace (mokube--get-namespace))
+             (name (format "watch-%s-%s-%s"
+                           namespace
+                           object
+                           instance)))
+        (watch (format "kubectl get %s -n %s" object namespace) name))))
+
 (defun mokube--get-contexts ()
   (split-string
    (shell-command-to-string "kubectl config view -o jsonpath='{.contexts[*].name}' | tr ' ' '\n'")
@@ -279,6 +291,7 @@
     (define-key map (kbd "C") 'mokube-set-context-ivy)
     (define-key map (kbd "N") 'mokube-set-namespace-ivy)
     (define-key map (kbd "d") 'mokube-describe-object)
+    (define-key map (kbd "w") 'mokube-watch-object)
     (define-key map (kbd "t") 'mokube-top)
     (define-key map (kbd "e") 'mokube-edit-object)
     (define-key map (kbd "k") 'mokube-delete-object)
