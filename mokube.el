@@ -128,7 +128,7 @@
       (setq start (point))
       (mokube-goto-next-object)
       (setq end (point))
-      (kill-region start end)))
+      (delete-region start end)))
   (read-only-mode 1))
 
 (defun mokube-hide-show ()
@@ -168,7 +168,7 @@
     (re-search-forward regexp)
     (let* ((beg (match-beginning match))
            (end (match-end match)))
-      (kill-region beg end)
+      (delete-region beg end)
       (goto-char beg)
       (insert newValue)))
   (read-only-mode 1))
