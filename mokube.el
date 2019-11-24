@@ -293,8 +293,9 @@
                            namespace
                            object
                            instance)))
-        (start-process name name
-                       "kubectl" "exec" "-it" instance "-n" namespace cmd)
+        (apply 'start-process
+               (append (list name name "kubectl" "-n" namespace "exec" instance)
+                       (split-string cmd " ")))
         (switch-to-buffer name))
     (message "no pod at point")))
 
