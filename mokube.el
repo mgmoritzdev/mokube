@@ -260,7 +260,8 @@
         (start-process name name
                        "kubectl" "logs" "--tail" "500" "-f"
                        instance "-n" namespace)
-        (switch-to-buffer name))))
+        (switch-to-buffer name)
+        (add-hook 'after-change-functions 'ansi-color-after-change nil t))))
 
 (defun mokube-bash-pod ()
   (interactive)
@@ -340,7 +341,7 @@
   "The keymap used in `mokube-mode'.")
 
 (defvar mokube-highlights
-  '(("Bindings:\\|Config Maps:\\|Endpoints:\\|Events:\\|Limit Ranges:\\|Persistent Volume Claims:\\|Pods:\\|Podtemplates:\\|Replication Controllers:\\|Resource Quotas:\\|Secrets:\\|Serviceaccounts:\\|Services:\\|Controller Revisions:\\|Daemon Sets:\\|Deployments:\\|Replica Sets:\\|Stateful Sets:\\|Local Subject Access Reviews:\\|Horizontal Pod Auto Scalers:\\|Cronjobs:\\|Jobs:\\|Backend Configs:\\|Ingresses:\\|Network Policies:\\|Pod Disruption Budgets:\\|Role Bindings:\\|Roles:\\|Scaling Policies:\\|Managed Certificates:\\|" . font-lock-function-name-face)
+  '(("Bindings:\\|Config Maps:\\|Endpoints:\\|Events:\\|Limit Ranges:\\|Persistent Volume Claims:\\|Pods:\\|Podtemplates:\\|Replication Controllers:\\|Resource Quotas:\\|Secrets:\\|Serviceaccounts:\\|Services:\\|Controller Revisions:\\|Daemon Sets:\\|Deployments:\\|Replica Sets:\\|Stateful Sets:\\|Local Subject Access Reviews:\\|Horizontal Pod Auto Scalers:\\|Cronjobs:\\|Jobs:\\|Backend Configs:\\|Ingresses:\\|Network Policies:\\|Pod Disruption Budgets:\\|Role Bindings:\\|Roles:\\|Scaling Policies:\\|Managed Certificates:\\|Elastic Search:\\|Kibana:\\|Certificate:\\|Issuer:\\|PersistentVolumeClaim:\\|StorageClass:\\|PersistentVolume:\\|Cluster Issuer:\\|" . font-lock-function-name-face)
     ("  NAME\.*" . font-lock-comment-delimiter-face)
     ("Namespace:\\|Context:" . font-lock-constant-face)
     ("Context: \\(\.+\\)" . (1 font-lock-comment-face))
@@ -365,3 +366,19 @@
   (use-local-map mokube-map))
 
 (add-hook 'mokube-mode-hook 'hl-line-mode)
+
+;; use ansi colors in logs
+(defun moritz/ansi-color (&optional beg end)
+  "Interpret ANSI color esacape sequence by colorifying cotent.
+  Operate on selected region on whole buffer."
+  (interactive
+   (if (use-region-p)
+       (list (region-beginning) (region-end))
+     (list (point-min) (point-max))))
+  (ansi-color-apply-on-region beg end))
+
+(defun ansi-color-after-change (beg end length)
+  (save-excursion
+    (goto-char beg)
+    (if (string-match "\^\[" (buffer-substring beg end))
+        (moritz/ansi-color beg end))))
