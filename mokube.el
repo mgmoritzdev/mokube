@@ -340,8 +340,10 @@
 (defvar mokube-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "o") 'mokube--get-object-at-point)
-    (define-key map (kbd "p") 'mokube-goto-previous-object)
-    (define-key map (kbd "n") 'mokube-goto-next-object)
+    (define-key map (kbd "C-c C-p") 'mokube-goto-previous-object)
+    (define-key map (kbd "C-c C-n") 'mokube-goto-next-object)
+    (define-key map (kbd "p") 'previous-line)
+    (define-key map (kbd "n") 'next-line)
     (define-key map (kbd "g") 'mokube-refresh-object)
     (define-key map (kbd "TAB") 'mokube-hide-show)
     (define-key map (kbd "C") 'mokube-set-context-ivy)
