@@ -282,6 +282,24 @@
         (switch-to-buffer (format "*%s*" name)))
     (message "no pod at point")))
 
+(defun mokube-port-forward-service ()
+  (interactive)
+  (if (and (mokube--at-instace-name-p)
+           (string-equal (mokube--get-object-at-point) "services"))
+      (let* ((port (read-number "Port to forward: "))
+             (object (mokube--get-object-at-point))
+             (instance (mokube--parse-instance-name))
+             (namespace (mokube--get-namespace))
+             (name (format "portforward-%s-%s-%s"
+                           namespace
+                           object
+                           instance)))
+        (start-process name name "kubectl" "port-forward"
+                       (format "%s/%s" object instance)
+                       (format "%d:80" port)
+                       "-n" namespace))
+    (message "no service at point")))
+
 (defun mokube-exec-pod ()
   (interactive)
   (if (and (mokube--at-instace-name-p)
@@ -329,6 +347,7 @@
     (define-key map (kbd "C") 'mokube-set-context-ivy)
     (define-key map (kbd "N") 'mokube-set-namespace-ivy)
     (define-key map (kbd "d") 'mokube-describe-object)
+    (define-key map (kbd "f") 'mokube-port-forward-service)
     (define-key map (kbd "w") 'mokube-watch-object)
     (define-key map (kbd "t") 'mokube-top)
     (define-key map (kbd "e") 'mokube-edit-object)
