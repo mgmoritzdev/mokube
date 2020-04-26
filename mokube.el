@@ -282,11 +282,14 @@
         (switch-to-buffer (format "*%s*" name)))
     (message "no pod at point")))
 
-(defun mokube-port-forward-service ()
-  (interactive)
+(defun mokube-port-forward-service (arg)
+  (interactive "P")
   (if (and (mokube--at-instace-name-p)
            (string-equal (mokube--get-object-at-point) "services"))
-      (let* ((port (read-number "Port to forward: "))
+      (let* ((remote-port (if arg
+                              (read-number "Remote Service Port: ")
+                            80))
+             (port (read-number "Port to forward: "))
              (object (mokube--get-object-at-point))
              (instance (mokube--parse-instance-name))
              (namespace (mokube--get-namespace))
@@ -296,7 +299,7 @@
                            instance)))
         (start-process name name "kubectl" "port-forward"
                        (format "%s/%s" object instance)
-                       (format "%d:80" port)
+                       (format "%d:%d" port remote-port)
                        "-n" namespace))
     (message "no service at point")))
 
