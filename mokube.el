@@ -359,6 +359,7 @@
     (define-key map (kbd "E") 'mokube-exec-pod)
     (define-key map (kbd "k") 'mokube-delete-object)
     (define-key map (kbd "b") 'mokube-bash-pod)
+    (define-key map (kbd "q") 'bury-buffer)
     (define-key map (kbd "?") 'describe-mode)
     (define-key map (kbd "l") 'mokube-log-pod)
     map)
