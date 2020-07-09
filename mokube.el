@@ -246,22 +246,25 @@
                        "kubectl" "delete" object instance "-n" namespace))
     (message "No resource at point")))
 
-(defun mokube-log-pod ()
-  (interactive)
-  (if (and (mokube--at-instace-name-p)
-           (string-equal (mokube--get-object-at-point) "pods"))
-      (let* ((object (mokube--get-object-at-point))
-             (instance (mokube--parse-instance-name))
-             (namespace (mokube--get-namespace))
-             (name (format "log-%s-%s-%s"
-                           namespace
-                           object
-                           instance)))
-        (start-process name name
-                       "kubectl" "logs" "--tail" "500" "-f"
-                       instance "-n" namespace)
-        (switch-to-buffer name)
-        (add-hook 'after-change-functions 'ansi-color-after-change nil t))))
+(defun mokube-log-pod (arg)
+  (interactive "P")
+  (let ((arg (number-to-string (if arg
+                                   arg
+                                 500))))
+    (if (and (mokube--at-instace-name-p)
+             (string-equal (mokube--get-object-at-point) "pods"))
+        (let* ((object (mokube--get-object-at-point))
+               (instance (mokube--parse-instance-name))
+               (namespace (mokube--get-namespace))
+               (name (format "log-%s-%s-%s"
+                             namespace
+                             object
+                             instance)))
+          (start-process name name
+                         "kubectl" "logs" "--tail" arg "-f"
+                         instance "-n" namespace)
+          (switch-to-buffer name)
+          (add-hook 'after-change-functions 'ansi-color-after-change nil t)))))
 
 (defun mokube-bash-pod ()
   (interactive)
@@ -343,6 +346,7 @@
 (defvar mokube-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "o") 'mokube--get-object-at-point)
+    (define-key map (kbd "u") 'mokube-goto-previous-object)
     (define-key map (kbd "C-c C-p") 'mokube-goto-previous-object)
     (define-key map (kbd "C-c C-n") 'mokube-goto-next-object)
     (define-key map (kbd "p") 'previous-line)
