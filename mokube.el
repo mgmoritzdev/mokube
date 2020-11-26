@@ -285,10 +285,11 @@
         (switch-to-buffer (format "*%s*" name)))
     (message "no pod at point")))
 
-(defun mokube-port-forward-service (arg)
+(defun mokube-port-forward-pod-or-service (arg)
   (interactive "P")
   (if (and (mokube--at-instace-name-p)
-           (string-equal (mokube--get-object-at-point) "services"))
+           (or (string-equal (mokube--get-object-at-point) "pods")
+               (string-equal (mokube--get-object-at-point) "services")))
       (let* ((remote-port (if arg
                               (read-number "Remote Service Port: ")
                             80))
@@ -304,7 +305,7 @@
                        (format "%s/%s" object instance)
                        (format "%d:%d" port remote-port)
                        "-n" namespace))
-    (message "no service at point")))
+    (message "no pod or service at point")))
 
 (defun mokube-exec-pod ()
   (interactive)
@@ -356,7 +357,7 @@
     (define-key map (kbd "C") 'mokube-set-context-ivy)
     (define-key map (kbd "N") 'mokube-set-namespace-ivy)
     (define-key map (kbd "d") 'mokube-describe-object)
-    (define-key map (kbd "f") 'mokube-port-forward-service)
+    (define-key map (kbd "f") 'mokube-port-forward-pod-or-service)
     (define-key map (kbd "w") 'mokube-watch-object)
     (define-key map (kbd "t") 'mokube-top)
     (define-key map (kbd "e") 'mokube-edit-object)
