@@ -371,7 +371,7 @@
   "The keymap used in `mokube-mode'.")
 
 (defvar mokube-highlights
-  '(("Nodes:\\|Bindings:\\|Config Maps:\\|Endpoints:\\|Events:\\|Limit Ranges:\\|Persistent Volume Claims:\\|Pods:\\|Podtemplates:\\|Replication Controllers:\\|Resource Quotas:\\|Secrets:\\|Serviceaccounts:\\|Services:\\|Controller Revisions:\\|Daemon Sets:\\|Deployments:\\|Replica Sets:\\|Stateful Sets:\\|Local Subject Access Reviews:\\|Horizontal Pod Auto Scalers:\\|Cronjobs:\\|Jobs:\\|Backend Configs:\\|Ingresses:\\|Network Policies:\\|Pod Disruption Budgets:\\|Role Bindings:\\|Roles:\\|Scaling Policies:\\|Managed Certificates:\\|Elastic Search:\\|Kibana:\\|Certificate:\\|Issuer:\\|Persistent Volume Claim:\\|Storage Class:\\|Persistent Volume:\\|Cluster Issuer:\\|Horizontal Pod Autoscalers:\\|Service Accounts:\\|" . font-lock-function-name-face)
+  '(("Nodes:\\|Bindings:\\|Config Maps:\\|Endpoints:\\|Events:\\|Limit Ranges:\\|Persistent Volume Claims:\\|Pods:\\|Podtemplates:\\|Replication Controllers:\\|Resource Quotas:\\|Secrets:\\|Serviceaccounts:\\|Services:\\|Controller Revisions:\\|Daemon Sets:\\|Deployments:\\|Replica Sets:\\|Stateful Sets:\\|Local Subject Access Reviews:\\|Horizontal Pod Auto Scalers:\\|Cronjobs:\\|Jobs:\\|Cron Jobs:\\|Backend Configs:\\|Ingresses:\\|Network Policies:\\|Pod Disruption Budgets:\\|Role Bindings:\\|Roles:\\|Scaling Policies:\\|Managed Certificates:\\|Elastic Search:\\|Kibana:\\|Certificate:\\|Issuer:\\|Persistent Volume Claim:\\|Storage Class:\\|Persistent Volume:\\|Cluster Issuer:\\|Horizontal Pod Autoscalers:\\|Service Accounts:\\|" . font-lock-function-name-face)
     ("  NAME\.*" . font-lock-comment-delimiter-face)
     ("Namespace:\\|Context:" . font-lock-constant-face)
     ("Context: \\(\.+\\)" . (1 font-lock-comment-face))
