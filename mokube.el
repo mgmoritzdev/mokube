@@ -143,18 +143,6 @@
                 (mokube-refresh-object))
             (mokube--clear-object-list-maybe))))))
 
-(defun mokube-watch-object ()
-  (interactive)
-  (if (mokube--at-object-name-p)
-      (let* ((object (mokube--get-object-at-point))
-             (instance (mokube--parse-instance-name))
-             (namespace (mokube--get-namespace))
-             (name (format "watch-%s-%s-%s"
-                           namespace
-                           object
-                           instance)))
-        (watch (format "kubectl get %s -n %s" object namespace) name))))
-
 (defun mokube--get-contexts ()
   (split-string
    (shell-command-to-string "kubectl config view -o jsonpath='{.contexts[*].name}' | tr ' ' '\n'")
@@ -265,6 +253,45 @@
                          instance "-n" namespace)
           (switch-to-buffer name)
           (add-hook 'after-change-functions 'ansi-color-after-change nil t)))))
+
+(defun mokube--clear-buffer-and-insert (name object namespace)
+  (with-current-buffer (get-buffer-create name)
+    (let ((inhibit-read-only t)
+          (current-position (point))
+          (using-region (use-region-p))
+          (beg (if (use-region-p)
+                   (region-beginning)))
+          (end (if (use-region-p)
+                   (region-end))))
+      (erase-buffer)
+      (mokube--insert-command-result
+       (format "kubectl get %s -n %s"
+               object
+               namespace))
+
+      (goto-char current-position)
+      (if using-region
+          (if (< current-position end)
+              (progn
+                (set-mark end)
+                (goto-char beg))
+            (progn
+              (set-mark beg)
+              (goto-char end)))))))
+
+(defun mokube-watch-object (arg)
+  (interactive "P")
+  (let ((arg (if arg
+                   arg
+                 10)))
+    (let* ((object (mokube--get-object-at-point))
+           (namespace (mokube--get-namespace))
+           (name (format "watch-%s-%s"
+                         namespace
+                         object)))
+      (if (not (get-buffer name))
+          (run-at-time t arg 'mokube--clear-buffer-and-insert name object namespace))
+      (switch-to-buffer name))))
 
 (defun mokube-bash-pod ()
   (interactive)
