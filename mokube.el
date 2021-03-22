@@ -234,23 +234,78 @@
                        "kubectl" "delete" object instance "-n" namespace))
     (message "No resource at point")))
 
-(defun mokube-log-pod (arg)
+(defun mokube--get-object (namespace object instance &optional format)
+  "Run kubectl get to retrieve object data. Defaults to `json' format"
+  (let ((format (if format
+                    format
+                  "json")))
+    (json-read-from-string (shell-command-to-string
+                 (format "kubectl get %s %s -n %s -o %s"
+                         object instance namespace format)))))
+
+
+(defun alist-get-recursive (data &rest keys)
+  (if (not (car keys))
+      data
+    (apply #'alist-get-recursive
+           (append (list (alist-get (car keys) data))
+                   (cdr keys)))))
+
+(defun mokube--get-property (namespace object instance &rest keys)
+  "Get object Definition `keys', if no key provided return it complete
+keys should look like: 'metadata 'label 'app)"
+  (apply #'alist-get-recursive
+         (append
+          (list (mokube--get-object namespace
+                                    object
+                                    instance))
+          keys)))
+
+(defun mokube--log-pod (object instance namespace name log-length)
+  (interactive "P")
+  (start-process name name
+                 "kubectl" "logs" "--tail" log-length "-f"
+                 instance "-n" namespace))
+
+(defun mokube--log-deploy (object instance namespace name log-length)
+  (interactive "P")
+  (let* ((label-app (mokube--get-property
+                     namespace
+                     object
+                     instance
+                     'metadata
+                     'labels
+                     'app))
+         (label-arguments (if label-app
+                              (list "-l"
+                                    (format "app=%s" label-app))
+                            '())))
+
+    (apply 'start-process
+           (append (list name name "kubectl"
+                         "logs" "--tail" log-length
+                         "-f" "-n" namespace)
+                   label-arguments))))
+
+(defun mokube-log (arg)
   (interactive "P")
   (let ((arg (number-to-string (if arg
                                    arg
-                                 500))))
-    (if (and (mokube--at-instace-name-p)
-             (string-equal (mokube--get-object-at-point) "pods"))
-        (let* ((object (mokube--get-object-at-point))
-               (instance (mokube--parse-instance-name))
+                                 500)))
+        (object (mokube--get-object-at-point)))
+    (if (mokube--at-instace-name-p)
+        (let* ((instance (mokube--parse-instance-name))
                (namespace (mokube--get-namespace))
                (name (format "log-%s-%s-%s"
                              namespace
                              object
                              instance)))
-          (start-process name name
-                         "kubectl" "logs" "--tail" arg "-f"
-                         instance "-n" namespace)
+          (cond
+           ((string-equal (mokube--get-object-at-point) "pods")
+            (mokube--log-pod object instance namespace name arg))
+           ((string-equal (mokube--get-object-at-point) "deployments")
+            (mokube--log-deploy object instance namespace name arg))
+           (t (message "No pod or deployment at point")))
           (switch-to-buffer name)
           (add-hook 'after-change-functions 'ansi-color-after-change nil t)))))
 
@@ -393,7 +448,7 @@
     (define-key map (kbd "b") 'mokube-bash-pod)
     (define-key map (kbd "q") 'bury-buffer)
     (define-key map (kbd "?") 'describe-mode)
-    (define-key map (kbd "l") 'mokube-log-pod)
+    (define-key map (kbd "l") 'mokube-log)
     map)
   "The keymap used in `mokube-mode'.")
 
