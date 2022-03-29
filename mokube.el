@@ -386,7 +386,9 @@ keys should look like: 'metadata 'label 'app)"
         (start-process name name "kubectl" "port-forward"
                        (format "%s/%s" object instance)
                        (format "%d:%d" port remote-port)
-                       "-n" namespace))
+                       "-n" namespace)
+        (message "command: kubectl port-forward %s/%s %d:%d"
+                 object instance port remote-port))
     (message "no pod or service at point")))
 
 (defun mokube-exec-pod ()
