@@ -67,6 +67,7 @@
         1
         (buffer-substring-no-properties (point-min) (point-max)))))))
 
+
 (defun mokube--get-namespace ()
   (save-excursion
     (save-match-data
@@ -142,6 +143,10 @@
                 (forward-line -1)
                 (mokube-refresh-object))
             (mokube--clear-object-list-maybe))))))
+
+(defun mokube-get-contexts ()
+  (interactive)
+  (mokube--get-contexts))
 
 (defun mokube--get-contexts ()
   (split-string
@@ -404,7 +409,7 @@ keys should look like: 'metadata 'label 'app)"
                            object
                            instance)))
         (apply 'start-process
-               (append (list name name "kubectl" "-n" namespace "exec" instance)
+               (append (list name name "kubectl" "-n" namespace "exec" instance "--")
                        (split-string cmd " ")))
         (switch-to-buffer name))
     (message "no pod at point")))
@@ -456,6 +461,7 @@ keys should look like: 'metadata 'label 'app)"
 
 (defvar mokube-highlights
   '(("Namespaces:\\|Nodes:\\|Bindings:\\|Config Maps:\\|Endpoints:\\|Events:\\|Limit Ranges:\\|Persistent Volume Claims:\\|Pods:\\|Podtemplates:\\|Replication Controllers:\\|Resource Quotas:\\|Secrets:\\|Serviceaccounts:\\|Services:\\|Controller Revisions:\\|Daemon Sets:\\|Deployments:\\|Replica Sets:\\|Stateful Sets:\\|Local Subject Access Reviews:\\|Horizontal Pod Auto Scalers:\\|Cronjobs:\\|Jobs:\\|Cron Jobs:\\|Backend Configs:\\|Ingresses:\\|Network Policies:\\|Pod Disruption Budgets:\\|Role Bindings:\\|Roles:\\|Scaling Policies:\\|Managed Certificates:\\|Elastic Search:\\|Kibana:\\|Certificate:\\|Issuer:\\|Persistent Volume Claim:\\|Storage Class:\\|Persistent Volume:\\|Cluster Issuer:\\|Horizontal Pod Autoscalers:\\|Backend Configs:\\|Service Accounts:\\|Replication Controller:\\|Daemon Set:\\|Cluster Role Binding:\\|Cluster Role:\\|Role Binding:\\|Role:\\|" . font-lock-function-name-face)
+    ("App Project:\\|Applications:\\|" . font-lock-function-name-face)
     ("  NAME\.*" . font-lock-comment-delimiter-face)
     ("Namespace:\\|Context:" . font-lock-constant-face)
     ("Context: \\(\.+\\)" . (1 font-lock-comment-face))
