@@ -365,10 +365,11 @@ keys should look like: 'metadata 'label 'app)"
                            object
                            instance)))
         (progn
-          (ansi-term "/bin/zsh" name)
-          (set-buffer (format "*%s*" name))
-          (term-send-raw-string (format "kubectl exec -it %s -n %s -- /bin/bash \n"
-                                        instance namespace)))
+          (let ((vterm-buffer (multi-vterm-get-buffer)))
+            (switch-to-buffer vterm-buffer)
+            (rename-buffer (format "*%s*" name) t)
+            (vterm-send-string (format "kubectl exec -it %s -n %s -- /bin/sh \n"
+                                       instance namespace))))
         (switch-to-buffer (format "*%s*" name)))
     (message "no pod at point")))
 
