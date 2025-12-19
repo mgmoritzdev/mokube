@@ -67,7 +67,6 @@
         1
         (buffer-substring-no-properties (point-min) (point-max)))))))
 
-
 (defun mokube--get-namespace ()
   (save-excursion
     (save-match-data
@@ -77,12 +76,26 @@
        1
        (buffer-substring-no-properties (point-min) (point-max))))))
 
+(defun mokube--get-filter ()
+  (save-excursion
+    (message
+     (save-match-data
+       (string-match "Filter: \\(\.+\\)"
+                     (buffer-substring-no-properties (point-min) (point-max)))
+       (match-string
+        1
+        (buffer-substring-no-properties (point-min) (point-max)))))))
+
 (defun mokube--format-kubectl-output (output)
   (let* ((lines (split-string output "\n"))
          (formatted-output (cl-map 'list
                                    'mokube--add-two-spaces
                                    lines)))
-    (mapconcat 'identity formatted-output "\n")))
+    (mapconcat 'identity (cl-remove-if-not
+                          (lambda (line) (if (not (string-equal (mokube--get-filter) "None"))
+                                        (string-match-p (format "NAME\\|%s\\|^  $" (mokube--get-filter)) line)
+                                      line))
+                          formatted-output) "\n")))
 
 (defun mokube--add-two-spaces (string)
   (format "  %s" string))
@@ -191,6 +204,13 @@
             (mokube--get-namespaces)
             :action (lambda (candidate)
                       (mokube--update-namespace candidate))))
+
+(defun mokube-set-filter ()
+  (interactive)
+  (mokube--update-filter (read-string "Filter: " "" t "None")))
+
+(defun mokube--update-filter (newValue)
+  (mokube--update "Filter: \\(\.+\\)" 1 newValue))
 
 (defun mokube--parse-instance-name ()
   (nth 2 (split-string
@@ -456,17 +476,19 @@ keys should look like: 'metadata 'label 'app)"
     (define-key map (kbd "b") 'mokube-bash-pod)
     (define-key map (kbd "q") 'bury-buffer)
     (define-key map (kbd "?") 'describe-mode)
+    (define-key map (kbd "/") 'mokube-set-filter)
     (define-key map (kbd "l") 'mokube-log)
     map)
   "The keymap used in `mokube-mode'.")
 
 (defvar mokube-highlights
-  '(("ResourceQuotas:\\|ValidatingWebhookConfigurations:\\|Namespaces:\\|Nodes:\\|Bindings:\\|Config Maps:\\|Endpoints:\\|Events:\\|Limit Ranges:\\|Persistent Volume Claims:\\|Pods:\\|Podtemplates:\\|Replication Controllers:\\|Resource Quotas:\\|Secrets:\\|Serviceaccounts:\\|Services:\\|Controller Revisions:\\|Daemon Sets:\\|Deployments:\\|Replica Sets:\\|Stateful Sets:\\|Local Subject Access Reviews:\\|Horizontal Pod Auto Scalers:\\|Cronjobs:\\|Jobs:\\|Cron Jobs:\\|Backend Configs:\\|Frontend Configs\\|Ingresses:\\|Network Policies:\\|Pod Disruption Budgets:\\|Role Bindings:\\|Roles:\\|Scaling Policies:\\|Managed Certificates:\\|Elastic Search:\\|Kibana:\\|Certificate:\\|Issuer:\\|Persistent Volume Claim:\\|Storage Class:\\|Persistent Volume:\\|Cluster Issuer:\\|Horizontal Pod Autoscalers:\\|Backend Configs:\\|Service Accounts:\\|Replication Controller:\\|Daemon Set:\\|Cluster Role Binding:\\|Cluster Role:\\|Role Binding:\\|Role:\\|" . font-lock-function-name-face)
+  '(("ResourceQuotas:\\|ValidatingWebhookConfigurations:\\|Namespaces:\\|Nodes:\\|Bindings:\\|Config Maps:\\|Endpoints:\\|Events:\\|Limit Ranges:\\|Persistent Volume Claims:\\|Pods:\\|Podtemplates:\\|Replication Controllers:\\|Resource Quotas:\\|Secrets:\\|Serviceaccounts:\\|Services:\\|Controller Revisions:\\|Daemon Sets:\\|Deployments:\\|Replica Sets:\\|Stateful Sets:\\|Local Subject Access Reviews:\\|Horizontal Pod Auto Scalers:\\|Cronjobs:\\|Jobs:\\|Cron Jobs:\\|Backend Configs:\\|Frontend Configs\\|Ingresses:\\|Network Policies:\\|Pod Disruption Budgets:\\|Role Bindings:\\|Roles:\\|Scaling Policies:\\|Managed Certificates:\\|Elastic Search:\\|Kibana:\\|Certificate:\\|Issuer:\\|Persistent Volume Claim:\\|Storage Class:\\|Persistent Volume:\\|Cluster Issuer:\\|Rollouts:\\|Horizontal Pod Autoscalers:\\|Backend Configs:\\|Service Accounts:\\|Replication Controller:\\|Daemon Set:\\|Cluster Role Binding:\\|Cluster Role:\\|Role Binding:\\|Role:\\|" . font-lock-function-name-face)
     ("App Project:\\|Applications:\\|" . font-lock-function-name-face)
     ("  NAME\.*" . font-lock-comment-delimiter-face)
-    ("Namespace:\\|Context:" . font-lock-constant-face)
+    ("Namespace:\\|Context:\\|Filter:" . font-lock-constant-face)
     ("Context: \\(\.+\\)" . (1 font-lock-comment-face))
-    ("Namespace: \\(\.+\\)" . (1 font-lock-comment-face))))
+    ("Namespace: \\(\.+\\)" . (1 font-lock-comment-face))
+    ("Filter: \\(\.+\\)" . (1 font-lock-comment-face))))
 
 (define-derived-mode mokube-mode special-mode "mokube"
   "Moritz kubernetes major mode.
